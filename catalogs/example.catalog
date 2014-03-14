@@ -1,0 +1,7 @@
+base-catalog: 10.9.2.catalog
+volume-name: OSX10.9.2_13C64
+output-name: OSX10.9.2_13C64.dmg
+
+create_luser-1.0.pkg ccb2794e33cc7a3399c5c955da1b6c917ecb1bbe
+apple_setup_done.pkg 3622b983e4d5d718aaf6b2f51fae060e737e1e3f
+command_line_tools_os_x_mavericks_for_xcode__late_october_2013.dmg cd325ee0b1720064292f2c86687449d0992f245b 

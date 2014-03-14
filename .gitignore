@@ -1,0 +1,6 @@
+build*
+cache*
+log*
+output*
+tmp*
+.stew_config
