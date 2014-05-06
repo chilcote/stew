@@ -79,6 +79,12 @@ Pass your catalog with the ```-b``` option, and ```stew.py``` will process the c
  
  ```stew.py``` caches the base sparseimage of an OS and saves it to the cache directory, which will speed up subsequent builds.  
 
+Credits
+-------
+
+This script was inspired by the awesome work by the [Google Mac Ops team](https://code.google.com/p/google-macops/source/browse/#svn%2Ftrunk%2Fcan_haz_image) and the wonderful [InstaDMG project](https://code.google.com/p/instadmg/).
+
+Also, much credit goes to @MaverValp and his outstanding [AutoDMG application](https://github.com/MagerValp/AutoDMG) (which you should definitely use instead of my half-baked script), and his patience with my infinite complaining. 
 
 License
 -------
