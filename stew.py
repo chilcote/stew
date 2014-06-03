@@ -127,7 +127,7 @@ class Stew(object):
         if stderr:
             logging.error('Unable to mount %s: %s' % (sparsebundle, stderr))
         else:
-            if self.sb_cache_exists:
+            if self.sb_cache_exists and current_os != '10.10':
                 return stdout.split('\n')[-3].split('\t')[-1]
             else:
                 return stdout.split('\n')[-2].split('\t')[-1]
