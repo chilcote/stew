@@ -6,7 +6,7 @@ and compiles a new image consisiting of a given base OS X installer and the list
 
 Requirements
 ------------
-+ 10.9.x (you must build your images on a matching system)  
++ 10.9.x and up (you must build your images on a matching system)  
 + python 2.7  
 + InstallESD.dmg must be renamed in the format OSVERS_OSBUILD_InstallESD.dmg  
 ```
