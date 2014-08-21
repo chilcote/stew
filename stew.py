@@ -151,7 +151,7 @@ class Stew(object):
                                             '-target', mountpoint]
         logging.info('Installing OS X into %s...' % mountpoint)
         (unused_stdout, stderr, unused_rc) = run_cmd(cmd)
-        cmd = ['hdiutil', 'detach', installer_mount]
+        cmd = ['hdiutil', 'detach', '-force', installer_mount]
         logging.debug('Detaching %s' % installer_mount)
         (unused_stdout, stderr, unused_rc) = run_cmd(cmd)
         if stderr:
