@@ -62,6 +62,9 @@ OUTPUT = os.path.join(os.getcwd(), 'output')
 project_dirs = [BUILD, CACHE, LOG, OUTPUT]
 timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M')
 log_file = os.path.join(LOG, '%s.log' % timestamp)
+env = os.environ.copy()
+env['CM_BUILD'] = 'CM_BUILD'
+env['COMMAND_LINE_INSTALL'] = '1'
 
 class Stew(object):
     """Object for building the image."""
@@ -127,7 +130,7 @@ class Stew(object):
         if stderr:
             logging.error('Unable to mount %s: %s' % (sparsebundle, stderr))
         else:
-            if self.sb_cache_exists and current_os != '10.10':
+            if self.sb_cache_exists:
                 return stdout.split('\n')[-3].split('\t')[-1]
             else:
                 return stdout.split('\n')[-2].split('\t')[-1]
@@ -270,7 +273,7 @@ def run_cmd(cmd, stream_out=False):
         task = subprocess.Popen(cmd)
     else:
         task = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                              stderr=subprocess.PIPE)
+                              stderr=subprocess.PIPE, env=env)
     (stdout, stderr) = task.communicate()
     return stdout, stderr, task.returncode
 
