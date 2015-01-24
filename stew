@@ -295,29 +295,55 @@ def collect_config_info(prompt):
     """Displays prompt to user and collects the response."""
     return raw_input('%s' % prompt)
 
-def append_config(config, category, prompt):
-    """Appends the config file with user-provided info."""
-    unanswered = True
-    while unanswered:
-        try:
-            answer = collect_config_info(prompt)
-        except KeyboardInterrupt:
-            logging.error('Aborting configuration.')
-            sys.exit()
-        if answer != '':
-            unanswered = False
-    f = open(config, 'a')
-    f.write("%s=%s\n" % (category, answer))
-    f.close
+def create_config(config):
+    """Creates the config file with user-provided info."""
+    d = {}
 
-def get_config_data(config, category):
+    l = [('webserver',
+            'Enter the FQDN of your webserver '
+            '(i.e. mypackageserver.example.com)...\n'
+            'Server FQDN: '
+            ),
+        ('path',
+            'Enter the storage path on your webserver '
+            '(i.e. /var/www/html/packages)...\n'
+            'Server path: '
+            ),
+        ('login',
+            'Enter the ssh user for your webserver...\n'
+            'Login user: '
+            )
+        ]
+
+    for i in l:
+        unanswered = True
+        while unanswered:
+            try:
+                answer = collect_config_info(i[1])
+            except KeyboardInterrupt:
+                logging.error('Aborting configuration.')
+                sys.exit()
+            if answer != '':
+                unanswered = False
+        d[i[0]] = answer
+    with open(config, 'w') as f:
+        json.dump(d, f, indent=4, separators=(',', ': '))
+
+    print '\nCongiration file setup complete...\n' \
+            'Use SSH keys for best results...\n'
+
+def get_config_data(config):
     """Returns data from config file."""
-    f = open(config, 'r')
-    for line in f.readlines():
-        if category in line:
-            line = line.rstrip()
-            return line.split('=')[1]
-    f.close
+    try:
+        with open(config) as f:
+            d = json.load(f)
+    except NameError as err:
+        print '%s; bailing script.' % err
+        sys.exit(1)
+    except IOError as err:
+        print '%s: %s' % (err.strerror, config)
+        sys.exit(1)
+    return d['webserver'], d['path'], d['login']
 
 def import_catalog(catalog):
     '''Imports user-defined catalog'''
@@ -419,43 +445,36 @@ def main():
     (options, unused_args) = parser.parse_args()
 
     if options.configure or not os.path.exists(CONFIG):
-        for d in project_dirs:
-            if not os.path.exists(d):
-                create_dir(d)
+        for i in project_dirs:
+            if not os.path.exists(i):
+                create_dir(i)
         if not os.path.exists(CONFIG):
-            print 'Config file does not exist! Creating now.'
+            print 'Config file does not exist! Creating now...\n'
         else:
-            print 'Recreating config file.'
+            print 'Recreating config file...\n'
             os.remove(CONFIG)
-        append_config(CONFIG, 'webserver', 'Enter the FQDN of your webserver '
-                            '(i.e. mypackageserver.example.com)\n'
-                            'Server FQDN: ')
-        append_config(CONFIG, 'path', 'Enter the storage path on your '
-                            'webserver (i.e. /var/www/html/packages)\n'
-                            'Server path: ')
-        append_config(CONFIG, 'login', 'Enter the ssh user for your '
-                            ' webserver\nLogin user: ')
-        print '\nCongiration file setup complete!' \
-                            '\nUse SSH keys for best results!\n'
+        create_config(CONFIG)
         if not options.configure:
             parser.print_help()
         sys.exit(0)
-    webserver = get_config_data(CONFIG, 'webserver')
-    serverpath = get_config_data(CONFIG, 'path')
+
+    webserver, serverpath, login = get_config_data(CONFIG)
     webpath = os.path.basename(serverpath)
-    login = get_config_data(CONFIG, 'login')
+
     if options.package:
         package = options.package
         print 'Uploading %s to %s:%s' % (package, webserver, serverpath)
         upload_pkg(package, login, webserver, serverpath)
         print os.path.basename(package), get_checksum(package)
         sys.exit(0)
+
     if options.filename:
         package = options.filename
         if "cache" not in options.filename:
             package = "cache/%s" % package
         print os.path.basename(package), get_checksum(package)
         sys.exit(0)
+
     if options.catalog:
         if os.getuid() != 0:
             print 'Using the -b option requires root!'
@@ -465,7 +484,6 @@ def main():
                             datefmt='%m/%d/%Y %I:%M:%S %p',
                             level=logging.DEBUG,
                             filename=log_file)
-
         console = logging.StreamHandler()
         console.setLevel(logging.INFO)
         formatter = logging.Formatter('%(message)s')
