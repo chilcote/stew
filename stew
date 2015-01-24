@@ -476,6 +476,7 @@ def main():
             print 'Using the -b option requires root!'
             parser.print_help()
             sys.exit(1)
+
         logging.basicConfig(format='%(asctime)s - %(levelname)s: %(message)s',
                             datefmt='%m/%d/%Y %I:%M:%S %p',
                             level=logging.DEBUG,
@@ -485,9 +486,12 @@ def main():
         formatter = logging.Formatter('%(message)s')
         console.setFormatter(formatter)
         logging.getLogger('').addHandler(console)
+
         catalog = options.catalog
+        if os.path.splitext(catalog)[1] != '.catalog':
+            catalog = '%s.catalog' % catalog
         if not "catalogs" in catalog:
-            catalog = "catalogs/%s" % options.catalog
+            catalog = "catalogs/%s" % catalog
         if not os.path.exists(catalog):
             print "File %s does not exist." % catalog
             sys.exit(1)
