@@ -2,9 +2,9 @@
 """
 Base image creation script.
 
-This script processes catalog(s) of packages, verifies the sha1 
-hash of each package, downloads any missing or updated packages, 
-and compiles a new image consisiting of a given base OS X installer 
+This script processes catalog(s) of packages, verifies the sha1
+hash of each package, downloads any missing or updated packages,
+and compiles a new image consisiting of a given base OS X installer
 and the list of packages.
 
 (Using a webserver to store packages and installers is encouraged,
@@ -28,7 +28,7 @@ Options:
 # 
 #  Licensed under the Apache License, Version 2.0 (the "License"); you may not
 #  use this file except in compliance with the License. You may obtain a copy
-#  of the License at  
+#  of the License at
 # 
 #       http://www.apache.org/licenses/LICENSE-2.0
 # 
@@ -42,6 +42,7 @@ Options:
 import os
 import re
 import sys
+import json
 import shutil
 import hashlib
 import urllib2
@@ -52,8 +53,6 @@ import subprocess
 from optparse import OptionParser
 
 current_os = platform.mac_ver()[0]
-base_pkgs = []
-other_pkgs = []
 CONFIG = os.path.join(os.getenv('HOME'), '.stew_config')
 BUILD = os.path.join(os.getcwd(), 'build')
 CACHE = os.path.join(os.getcwd(), 'cache')
@@ -70,18 +69,18 @@ class Stew(object):
     """Object for building the image."""
 
     def __init__(self, volume_name, output_name, config, 
-                    base_installer, pkgs, BUILD):
+                    os_installer, pkgs, BUILD):
         self.cwd = os.getcwd()
         self.build = BUILD
         self.volume_name = volume_name
         self.output_name = output_name
         self.config = config
-        self.base_installer = base_installer
+        self.os_installer = os_installer
         self.pkgs = pkgs
         #self.timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M')
         self.os_version = run_cmd(['sw_vers'])[0].split('\t')[2][:4]
         self.installer_choices = '%s_InstallerChoices.xml' % self.os_version
-        self.osbuild = self.base_installer.split("_")[1]
+        self.osbuild = self.os_installer.split("_")[1]
         self.sb_cache = os.path.join(CACHE, self.osbuild) + '.sparsebundle'
         self.sb_cache_exists = False
 
@@ -110,7 +109,7 @@ class Stew(object):
             (unused_stdout, stderr, unused_rc) = run_cmd(cmd)
             if stderr:
                 logging.warning('Failed to create %s: %s' % (sparsebundle_path,
-                                                                stderr))
+                                                            stderr))
                 raise SystemExit
             else:
                 return sparsebundle_path
@@ -118,7 +117,7 @@ class Stew(object):
             logging.debug('Found sparsebundle cache: %s' % sb_cache)
             logging.debug('Copying %s to %s' % (sb_cache, sparsebundle_path))
             shutil.copytree(os.path.join(CACHE, sb_cache), 
-                                sparsebundle_path)        
+                                sparsebundle_path)
         return sparsebundle_path
 
     def mount_sparsebundle(self, sparsebundle):
@@ -137,7 +136,7 @@ class Stew(object):
 
     def mount_installer(self):
         """Mounts the InstallDMG volume"""
-        baseimage_path = os.path.join(CACHE, self.base_installer)
+        baseimage_path = os.path.join(CACHE, self.os_installer)
         cmd = ['hdiutil', 'attach', '-nobrowse','-noverify', 
                                 '-noautoopen', baseimage_path]
         logging.debug('Mounting %s' % baseimage_path)
@@ -174,7 +173,7 @@ class Stew(object):
 
     def mount_dmg(self, dmg):
         dmg_path = os.path.join(CACHE, dmg)
-        cmd = ['hdiutil', 'attach', '-nobrowse','-noverify', 
+        cmd = ['hdiutil', 'attach', '-nobrowse','-noverify',
                                 '-noautoopen', dmg_path]
         logging.debug('Mounting %s' % dmg_path)
         (stdout, stderr, unused_rc) = run_cmd(cmd)
@@ -196,7 +195,7 @@ class Stew(object):
                 dmg_mount = False
                 pkg_to_install = os.path.join(CACHE, pkg[0])
             logging.debug('Installing %s' % pkg_to_install)
-            cmd = ['installer', '-pkg', pkg_to_install, '-target', 
+            cmd = ['installer', '-pkg', pkg_to_install, '-target',
                                     mountpoint, '-verboseR']
             (stdout, stderr, unused_rc) = run_cmd(cmd)
             if stderr:
@@ -317,31 +316,20 @@ def get_config_data(config, category):
             return line.split('=')[1]
     f.close
 
-def get_catalog_data(catalog, category):
-    """Returns requested info as defined in the catalog."""
-    f = open(catalog, 'r')
-    for line in f.readlines():
-        if category in line:
-            line = line.rstrip()
-            if category == "base-catalog":
-                return "catalogs/%s" % line.split()[1]
-            else:
-                return line.split()[1]
-    f.close
+def import_catalog(catalog):
+    '''Imports user-defined catalog'''
+    try:
+        with open(catalog) as f:
+            d = json.load(f)
+    except NameError as err:
+        print '%s; bailing script.' % err
+        sys.exit(1)
+    except IOError as err:
+        print '%s: %s' % (err.strerror, catalog)
+        sys.exit(1)
+    return d
 
-def get_pkgs(catalog, pkgs):
-    """Populates package list based on the catalog."""
-    f = open(catalog, 'r')
-    for line in f.readlines():
-            if not "base-catalog" in line and not "base-installer" in line \
-                                    and not "volume-name" in line \
-                                    and not "output-name" in line:
-                line = line.rstrip()
-                if line != '':
-                    pkgs.append(line.split())
-    f.close
-
-def process_base_installer(base, webserver, webpath):
+def process_os_installer(base, webserver, webpath):
     """Checks for base installer and dowloads if needed."""
     pkg_url = "http://%s/%s/%s" % (webserver, webpath, base)
     if os.path.exists(os.path.join(os.getcwd(), 'cache', base)):
@@ -479,42 +467,34 @@ def main():
         console.setLevel(logging.INFO)
         formatter = logging.Formatter('%(message)s')
         console.setFormatter(formatter)
-        logging.getLogger('').addHandler(console)            
+        logging.getLogger('').addHandler(console)
         catalog = options.catalog
         if not "catalogs" in catalog:
             catalog = "catalogs/%s" % options.catalog
         if not os.path.exists(catalog):
             print "File %s does not exist." % catalog
             sys.exit(1)
-        volume_name = get_catalog_data(catalog, "volume-name")
-        output_name = get_catalog_data(catalog, "output-name")
-        base_catalog = get_catalog_data(catalog, "base-catalog")
-        if base_catalog:
-            get_pkgs(base_catalog, base_pkgs)
-            base_installer = get_catalog_data(base_catalog, "base-installer")
-            if not volume_name:
-                volume_name = get_catalog_data(base_catalog, "volume-name")
-            if not output_name:
-                output_name = get_catalog_data(base_catalog, "output-name")
-        else:
-            base_installer = get_catalog_data(catalog, "base-installer")
+        catalog_data = import_catalog(catalog)
+        volume_name = catalog_data['volume-name']
+        output_name = catalog_data['output-name']
+        os_catalog_data = import_catalog('catalogs/' + catalog_data['os-catalog'])
+        os_installer = os_catalog_data['os-installer']
+        pkgs = os_catalog_data['packages'] + catalog_data['packages']
         if not volume_name:
             volume_name = "Macintosh HD"
         if not output_name:
-            output_name = '%s.dmg' % base_installer.split("_")[0]
+            output_name = '%s.dmg' % os_installer.split("_")[0]
         logging.info('Build started at: %s' % datetime.datetime.now())
         logging.info('Current OS: %s' % current_os)
-        logging.info('Base catalog: %s' % base_catalog)
-        logging.info('Base installer: %s' % base_installer)
+        logging.info('Base catalog: %s' % catalog_data['os-catalog'])
+        logging.info('Base installer: %s' % os_installer)
         logging.info('Volume name: %s' % volume_name)
-        logging.info('Output name: %s' %output_name)
-        get_pkgs(catalog, other_pkgs)
-        all_pkgs = base_pkgs + other_pkgs
+        logging.info('Output name: %s' % output_name)
         print 'Processing catalog(s)...'
-        process_base_installer(base_installer, webserver, webpath)
-        process_pkgs(all_pkgs, webserver, webpath)
-        stew = Stew(volume_name, output_name, CONFIG, base_installer,
-                        all_pkgs, BUILD)
+        process_os_installer(os_installer, webserver, webpath)
+        process_pkgs(pkgs, webserver, webpath)
+        stew = Stew(volume_name, output_name, CONFIG, os_installer,
+                        pkgs, BUILD)
         stew.build_image()
         logging.info('Build finished at %s' % datetime.datetime.now())
     else:

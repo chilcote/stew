@@ -5,6 +5,7 @@ import sys
 import re
 import subprocess
 import hashlib
+import json
 
 CONFIG = os.path.join(os.getenv('HOME'), '.stew_config')
 
