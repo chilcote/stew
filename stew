@@ -10,7 +10,7 @@ and the list of packages.
 (Using a webserver to store packages and installers is encouraged,
 but not required.)
 
-Usage: sudo stew.py [options]
+Usage: sudo ./stew [options]
 
 Options:
   -h, --help            show this help message and exit
@@ -291,10 +291,6 @@ def create_dir(dirpath):
         except OSError:
             print 'Unable to create folder %s' % dirpath
 
-def collect_config_info(prompt):
-    """Displays prompt to user and collects the response."""
-    return raw_input('%s' % prompt)
-
 def create_config(config):
     """Creates the config file with user-provided info."""
     d = {}
@@ -319,7 +315,7 @@ def create_config(config):
         unanswered = True
         while unanswered:
             try:
-                answer = collect_config_info(i[1])
+                answer = raw_input('%s' % i[1])
             except KeyboardInterrupt:
                 logging.error('Aborting configuration.')
                 sys.exit()
@@ -332,7 +328,7 @@ def create_config(config):
     print '\nCongiration file setup complete...\n' \
             'Use SSH keys for best results...\n'
 
-def get_config_data(config):
+def import_config(config):
     """Returns data from config file."""
     try:
         with open(config) as f:
@@ -458,7 +454,7 @@ def main():
             parser.print_help()
         sys.exit(0)
 
-    webserver, serverpath, login = get_config_data(CONFIG)
+    webserver, serverpath, login = import_config(CONFIG)
     webpath = os.path.basename(serverpath)
 
     if options.package:
