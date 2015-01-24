@@ -19,14 +19,18 @@ def run_cmd(cmd, stream_out=False):
     (stdout, stderr) = task.communicate()
     return stdout, stderr, task.returncode
 
-def get_config_data(config, category):
+def import_config(config):
     """Returns data from config file."""
-    f = open(config, 'r')
-    for line in f.readlines():
-        if category in line:
-            line = line.rstrip()
-            return line.split('=')[1]
-    f.close
+    try:
+        with open(config) as f:
+            d = json.load(f)
+    except NameError as err:
+        print '%s; bailing script.' % err
+        sys.exit(1)
+    except IOError as err:
+        print '%s: %s' % (err.strerror, config)
+        sys.exit(1)
+    return d['webserver'], d['path'], d['login']
 
 def get_checksum(pkg):
     """Returns sha1 checksum of package."""
@@ -39,13 +43,6 @@ def get_checksum(pkg):
         cmd = ['shasum', pkg]
         (stdout, unused_sterr, unused_rc) = run_cmd(cmd)
         return stdout.split()[0]
-
-def get_webserver(config_file):
-    f = open(config_file, 'r')
-    for line in f.readlines():
-        if "webserver" in line:
-            line = line.rstrip()
-            return line.split('=')[1]
 
 def upload_pkg(pkg, login, webserver, serverpath):
     """Uploads package."""
@@ -60,10 +57,8 @@ def main():
     if len(sys.argv) != 2:
         print 'Usage: uptodate.py /path/to/package'
         sys.exit(1)
-    webserver = get_config_data(CONFIG, 'webserver')
-    serverpath = get_config_data(CONFIG, 'path')
+    webserver, serverpath, login = import_config(CONFIG)
     webpath = os.path.basename(serverpath)
-    login = get_config_data(CONFIG, 'login')
     package = sys.argv[1]
     upload_pkg(package, login, webserver, serverpath)
     print os.path.basename(package), get_checksum(package)
