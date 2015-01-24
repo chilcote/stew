@@ -54,6 +54,7 @@ import datetime
 import platform
 import subprocess
 from optparse import OptionParser
+from SystemConfiguration import SCDynamicStoreCopyConsoleUser
 
 current_os = platform.mac_ver()[0]
 CONFIG = os.path.join(os.getenv('HOME'), '.stew_config')
@@ -266,6 +267,7 @@ class Stew(object):
             mountpoint = self.mount_sparsebundle(sparsebundle)
         self.install_packages(self.pkgs, mountpoint)
         image_output = self.convert_sparsebundle(mountpoint, sparsebundle)
+        set_perms(os.path.abspath(image_output))
         print 'Image saved to: %s' % image_output
         self.cleanup(sparsebundle)
 
@@ -401,6 +403,7 @@ def download_pkg(pkgurl, target):
         pkg_dl = urllib2.urlopen(pkgurl)
         tmpfile = open(target, 'wb')
         shutil.copyfileobj(pkg_dl, tmpfile)
+        set_perms(os.path.abspath(target))
     except urllib2.URLError, e:
         logging.warning('Download of %s failed with error %s' % (pkgurl, e))
         sys.exit()
@@ -413,6 +416,12 @@ def upload_pkg(pkg, login, webserver, serverpath):
     """Uploads package."""
     cmd = ['scp', pkg, '%s@%s:%s' % (login, webserver, serverpath)]
     run_cmd(cmd)
+
+def set_perms(path):
+    '''Sets the permissions of the given file'''
+    uid = SCDynamicStoreCopyConsoleUser(None, None, None)[1]
+    if uid != 0:
+        os.chown(path, int(uid), 20)
 
 def get_checksum(pkg):
     """Returns sha1 checksum of package."""
