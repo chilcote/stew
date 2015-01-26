@@ -103,7 +103,7 @@ def import_catalog(catalog):
     return d
 
 def get_checksum(pkg):
-    """Returns sha1 checksum of package."""
+    '''Returns sha1 checksum of package.'''
     statinfo = os.stat(pkg)
     if statinfo.st_size/1048576 < 200:
         f_content = open(pkg, 'r').read()
@@ -120,22 +120,24 @@ def upload_pkg(pkg, login, webserver, serverpath):
     run_cmd(cmd)
 
 def update_catalog(catalog, d):
+    '''Updates catalog'''
     with open(catalog, 'w') as f:
         json.dump(d, f, indent=4, separators=(',', ': '))
 
 def print_catalog(catalog, entry=None):
+    '''Prints catalog'''
     if 'os-catalog' in catalog.keys():
-        print colored('OS Catalog: %s' % catalog['os-catalog'], 'cyan')
-        print colored('Output Name: %s' % catalog['output-name'], 'cyan')
-        print colored('Volume Name: %s' % catalog['volume-name'], 'cyan')
+        print colored('OS Catalog:\t%s' % catalog['os-catalog'], 'cyan')
+        print colored('Output Name:\t%s' % catalog['output-name'], 'cyan')
+        print colored('Volume Name:\t%s' % catalog['volume-name'], 'cyan')
     else:
-        print colored('OS Installer: %s' % catalog['os-installer'], 'cyan')
+        print colored('OS Installer:\t%s' % catalog['os-installer'], 'cyan')
     print colored('Packages:', 'cyan')
     for i in catalog['packages']:
         if catalog['packages'].index(i) == entry:
-            print colored(' %s' % i[0], 'magenta')
+            print colored('\t\t%s' % i[0], 'magenta')
         else:
-            print colored(' %s' % i[0], 'cyan')
+            print colored('\t\t%s' % i[0], 'cyan')
 
 def main():
     '''Main method'''
