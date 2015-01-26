@@ -6,13 +6,15 @@ This script uploads a given package, generates a sha1
 hash of the package, and optionally updates a given catalog
 with the package information.
 
-usage: uptodate [-h] [-p PACKAGE] [-c CATALOG]
+usage: uptodate [-h] [-p PACKAGE] [-c CATALOG] [-l LIST_CATALOG]
 
 optional arguments:
   -h, --help            show this help message and exit
   -p PACKAGE, --package PACKAGE
                         /path/to/package
   -c CATALOG, --catalog CATALOG
+                        /path/to/catalog
+  -l LIST_CATALOG, --list_catalog LIST_CATALOG
                         /path/to/catalog
 """
 
