@@ -121,20 +121,26 @@ def update_catalog(catalog, d):
     with open(catalog, 'w') as f:
         json.dump(d, f, indent=4, separators=(',', ': '))
 
-def print_catalog(catalog):
-    print colored('OS Catalog: %s' % catalog['os-catalog'], 'cyan')
-    print colored('Output Name: %s' % catalog['output-name'], 'cyan')
-    print colored('Volume Name: %s' % catalog['volume-name'], 'cyan')
+def print_catalog(catalog, entry=None):
+    if 'os-catalog' in catalog.keys():
+        print colored('OS Catalog: %s' % catalog['os-catalog'], 'cyan')
+        print colored('Output Name: %s' % catalog['output-name'], 'cyan')
+        print colored('Volume Name: %s' % catalog['volume-name'], 'cyan')
+    else:
+        print colored('OS Installer: %s' % catalog['os-installer'], 'cyan')
     print colored('Packages:', 'cyan')
     for i in catalog['packages']:
-        print colored(' %s' % i[0], 'cyan')
-
+        if catalog['packages'].index(i) == entry:
+            print colored(' %s' % i[0], 'magenta')
+        else:
+            print colored(' %s' % i[0], 'cyan')
 
 def main():
     '''Main method'''
     parser = argparse.ArgumentParser()
     parser.add_argument('-p', '--package', help='/path/to/package')
     parser.add_argument('-c', '--catalog', help='/path/to/catalog')
+    parser.add_argument('-l', '--list_catalog', help='/path/to/catalog')
     args = parser.parse_args()
 
     if not os.path.exists(CONFIG):
@@ -148,7 +154,7 @@ def main():
     if args.package:
         package = args.package
         checksum = get_checksum(package)
-        print colored('Uploading package: %s...' % package, 'cyan')
+        print colored('Uploading package: %s...' % package, 'yellow')
         upload_pkg(package, login, webserver, serverpath)
 
         if args.catalog:
@@ -158,30 +164,50 @@ def main():
                 for i in enumerate(catalog['packages']):
                     print colored('%s: %s' % (i[0], i[1][0]), 'yellow')
                 answer = raw_input(colored('Choose a package to replace: ', 'green'))
-                print colored('Updating catalog: %s...' % args.catalog, 'cyan')
-                print colored('Removing: %s...' % catalog['packages'][int(answer)][0], 'cyan')
-                print colored('Adding: %s...' % package, 'cyan')
-                catalog['packages'][int(answer)] = (package, checksum)
-                update_catalog(args.catalog, catalog)
-                print_catalog(catalog)
+                print colored('Updating catalog: %s...' % args.catalog, 'yellow')
+                print colored('Removing: %s...' % catalog['packages'][int(answer)][0], 'yellow')
+                print colored('Adding: %s...' % os.path.basename(package), 'yellow')
+                catalog['packages'][int(answer)] = (os.path.basename(package), checksum)
+                entry = int(answer)
+            elif replace == 'n':
+                l = catalog['packages']
+                print colored('Adding: %s...' % os.path.basename(package), 'yellow')
+                l.append([os.path.basename(package), checksum])
+                catalog['packages'] = l
+                entry = len(catalog['packages']) - 1
+            else:
+                print colored('%s is not a valid option, bailing script.' % replace, 'red')
+                sys.exit(1)
+            update_catalog(args.catalog, catalog)
+            print_catalog(catalog, entry)
         else:
-            print colored(os.path.basename(package), checksum, 'cyan')
+            print colored('%s %s' % (os.path.basename(package), checksum), 'cyan')
 
-    if args.catalog and not args.package:
+    elif args.catalog and not args.package:
         catalog = import_catalog(args.catalog)
-        try:
-            catalog['os-catalog']
-        except KeyError:
-                print colored('Detected OS Catalog, exiting script', 'red')
-                sys.exit(0)
-        output_name = raw_input(colored('New output-name: ', 'green'))
-        volume_name = raw_input(colored('New volume-name: ', 'green'))
-        if output_name:
-            catalog['output-name'] = output_name
-        if volume_name:
-            catalog['volume-name'] = volume_name
+        if 'os-installer' in catalog.keys():
+            os_installer = raw_input(colored('New os-installer: ', 'green'))
+            if os_installer:
+                catalog['os-installer'] = os_installer
+        else:
+            os_catalog = raw_input(colored('New os-catalog: ', 'green'))
+            output_name = raw_input(colored('New output-name: ', 'green'))
+            volume_name = raw_input(colored('New volume-name: ', 'green'))
+            if os_catalog:
+                catalog['os-catalog'] = os_catalog
+            if output_name:
+                catalog['output-name'] = output_name
+            if volume_name:
+                catalog['volume-name'] = volume_name
         update_catalog(args.catalog, catalog)
         print_catalog(catalog)
+
+    elif args.list_catalog:
+        catalog = import_catalog(args.list_catalog)
+        print_catalog(catalog)
+
+    else:
+        parser.print_help()
 
 if __name__ == '__main__':
   main()
