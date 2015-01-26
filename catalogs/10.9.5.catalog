@@ -1,0 +1,29 @@
+{
+    "os-installer": "10.9.5_13F34_InstallESD.dmg",
+    "packages": [
+        [
+            "iTunes12.0.1.dmg",
+            "0b0b6b00dbca55e272fab2fca3f59536cf119a8a"
+        ],
+        [
+            "Safari7.1.2Mavericks.pkg",
+            "d83073b1277dd6c1ab94d7dceff090f16990281d"
+        ],
+        [
+            "iBooksDelta.pkg",
+            "9b075180c00fe27f4a7471d7b16f80c6ca370e8f"
+        ],
+        [
+            "JavaForOSX2014-001.dmg",
+            "0dc67455ff90ae0d20001a018465d3929f0a5334"
+        ],
+        [
+            "SecUpd2014-005Mavericks.dmg",
+            "30fb47f161f9c7d0f74694fad660bb70c3c3b810"
+        ],
+        [
+            "NTPUpdateMavericks.pkg",
+            "a1dd0e1e1d47ef4ef7d6f48dcc85f5ad6f2e9892"
+        ]
+    ]
+}

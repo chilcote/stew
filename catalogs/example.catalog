@@ -1,7 +1,6 @@
 {
-    "os-catalog": "10.9.2.catalog",
-    "volume-name": "OSX10.9.2_13C64",
-    "output-name": "OSX10.9.2_13C64.dmg",
+    "volume-name": "OS10.10.1_14B25.dmg",
+    "os-catalog": "10.10.1.catalog",
     "packages": [
         [
             "create_luser-1.0.pkg",
@@ -15,5 +14,6 @@
             "command_line_tools_os_x_mavericks_for_xcode__late_october_2013.dmg",
             "cd325ee0b1720064292f2c86687449d0992f245b"
         ]
-    ]
+    ],
+    "output-name": "OS10.10.1_14B25"
 }
