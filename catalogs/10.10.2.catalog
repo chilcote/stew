@@ -1,0 +1,9 @@
+{
+    "os-installer": "10.10.2_14C109_InstallESD.dmg",
+    "packages": [
+        [
+            "RemoteDesktopClient.pkg",
+            "436142f58d5ce80477b420bf6278eb5c96f8e35e"
+        ]
+    ]
+}
