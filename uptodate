@@ -135,7 +135,7 @@ def print_catalog(catalog, entry=None):
     print colored('Packages:', 'cyan')
     for i in catalog['packages']:
         if catalog['packages'].index(i) == entry:
-            print colored('\t\t%s' % i[0], 'magenta')
+            print colored('\t\t%s (%s)' % (i[0], i[1]), 'yellow')
         else:
             print colored('\t\t%s' % i[0], 'cyan')
 
@@ -166,7 +166,7 @@ def main():
             replace = raw_input(colored('Are you replacing a package? (y/n): ', 'green'))
             if replace == 'y':
                 for i in enumerate(catalog['packages']):
-                    print colored('%s: %s' % (i[0], i[1][0]), 'yellow')
+                    print colored('%s: %s (%s)' % (i[0], i[1][0], i[1][1]), 'yellow')
                 answer = raw_input(colored('Choose a package to replace: ', 'green'))
                 print colored('Updating catalog: %s...' % args.catalog, 'yellow')
                 print colored('Removing: %s...' % catalog['packages'][int(answer)][0], 'yellow')
