@@ -2,7 +2,7 @@ stew
 =======
 
 This script processes catalog(s) of packages, verifies the sha1 hash of each package, downloads any missing or updated packages, 
-and compiles a new image consisiting of a given base OS X installer and the list of packages.
+and compiles a new image consisting of a given base OS X installer and the list of packages.
 
 Requirements
 ------------
@@ -45,7 +45,7 @@ You will be asked to provide the following information:
 Uploading packages
 ------------------
 
-```stew``` supports both the pkg and dmg format for procesing packages. You may simply upload packages with the ```stew -u``` option, or you may wish to copy the companion ```uptodate``` script to your $PATH and use that. ```uptodate``` also offers the ability to list catalogs and automates the editing and updating of catalog files:
+```stew``` supports both the pkg and dmg format for processing packages. You may simply upload packages with the ```stew -u``` option, or you may wish to copy the companion ```uptodate``` script to your $PATH and use that. ```uptodate``` also offers the ability to list catalogs and automates the editing and updating of catalog files:
 
         usage: uptodate [-h] [-p PACKAGE] [-c CATALOG] [-l LIST_CATALOG]
 
