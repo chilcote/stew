@@ -1,0 +1,9 @@
+{
+    "os-installer": "10.10.3_14D136_InstallESD.dmg",
+    "packages": [
+        [
+            "iTunes12.1.2.dmg",
+            "fa2f433e41f30aa2dce9caa4a799b920a0347637"
+        ]
+    ]
+}
