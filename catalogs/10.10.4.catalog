@@ -1,0 +1,13 @@
+{
+    "os-installer": "10.10.4_14E46_InstallESD.dmg",
+    "packages": [
+        [
+            "RemoteDesktopClient.pkg",
+            "45f0b439a8841cc9604e8c0dbaa4f3c171258340"
+        ],
+        [
+            "itunes12.2.dmg",
+            "e7fbbd56bfa6d1423d631d7de1e8957b5ff0d9a8"
+        ]
+    ]
+}

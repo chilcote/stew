@@ -1,9 +1,9 @@
 {
-    "os-installer": "10.10.3_14D136_InstallESD.dmg",
+    "os-installer": "10.10.3_14D2134_InstallESD.dmg",
     "packages": [
         [
-            "iTunes12.1.2.dmg",
-            "fa2f433e41f30aa2dce9caa4a799b920a0347637"
+            "itunes12.2.dmg",
+            "e7fbbd56bfa6d1423d631d7de1e8957b5ff0d9a8"
         ],
         [
             "Safari8.0.6Yosemite.pkg",
